@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+[workspace]
+
+[package]
+name = "openshell-supervisor-middleware-delegated-biometric-guard"
+description = "Example OpenShell supervisor middleware that gates biometric egress on a signed delegation grant"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.94"
+license = "Apache-2.0"
+publish = false
+
+[dependencies]
+base64 = "0.22"
+clap = { version = "4.5", features = ["derive"] }
+ed25519-dalek = { version = "2", features = ["pkcs8", "rand_core"] }
+jsonwebtoken = { version = "10", default-features = false, features = ["rust_crypto"] }
+openshell-core = { path = "../../crates/openshell-core", default-features = false }
+# Used by the `demo` binary to drive the service through OpenShell's own chain runner.
+openshell-supervisor-middleware = { path = "../../crates/openshell-supervisor-middleware" }
+prost-types = "0.14"
+rand = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1.43", features = ["macros", "rt-multi-thread", "net"] }
+tokio-stream = { version = "0.1", features = ["net"] }
+tonic = { version = "0.14", features = ["transport"] }
+
+[dev-dependencies]
+openshell-policy = { path = "../../crates/openshell-policy" }
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "delegated-biometric-guard"
+path = "src/main.rs"
+
+[[bin]]
+name = "mint-grant"
+path = "src/bin/mint_grant.rs"
+
+[[bin]]
+name = "demo"
+path = "src/bin/demo.rs"

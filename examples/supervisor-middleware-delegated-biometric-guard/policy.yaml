@@ -1,0 +1,56 @@
+# SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Biometric data may reach the face-verification vendor only under a signed
+# delegation grant. Replace issuer_public_key with the value printed by
+# `cargo run --bin mint-grant -- keygen`.
+
+version: 1
+
+network_middlewares:
+  biometric-egress:
+    name: Delegated biometric guard
+    middleware: delegated-biometric-guard
+    order: 10
+    config:
+      mode: enforce
+      grant_header: x-agent-delegation
+      issuer: https://idp.example.test
+      issuer_public_key: 11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo
+      allowed_purposes:
+        - identity_verification
+        - fraud_review
+      image_hosts:
+        - api.faceverify.example.test
+    on_error: fail_closed
+    endpoints:
+      include:
+        - api.faceverify.example.test
+        - httpbin.org
+
+network_policies:
+  face-verification-vendor:
+    name: Face verification vendor
+    endpoints:
+      - host: api.faceverify.example.test
+        port: 443
+        protocol: rest
+        rules:
+          - allow:
+              method: POST
+              path: /v1/verify
+    binaries:
+      - path: /usr/bin/curl
+      - path: /usr/bin/python3
+  httpbin:
+    name: httpbin (echo, for trying the guard end to end)
+    endpoints:
+      - host: httpbin.org
+        port: 443
+        protocol: rest
+        rules:
+          - allow:
+              method: POST
+              path: /anything
+    binaries:
+      - path: /usr/bin/curl
